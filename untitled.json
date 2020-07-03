@@ -1,0 +1,91 @@
+{
+    "courses": [
+        {
+            "id": 3,
+            "fullname": "WWI 17 SC B",
+            "shortname": "wwi17scb",
+            "timemodified": 1591876316,
+            "assignments": [
+                {
+                    "id": 1,
+                    "cmid": 4,
+                    "course": 3,
+                    "name": "Abgabe PA 1",
+                    "nosubmissions": 0,
+                    "submissiondrafts": 0,
+                    "sendnotifications": 0,
+                    "sendlatenotifications": 0,
+                    "sendstudentnotifications": 1,
+                    "duedate": 1592434800,
+                    "allowsubmissionsfromdate": 1591830000,
+                    "grade": 100,
+                    "timemodified": 1591877302,
+                    "completionsubmit": 1,
+                    "cutoffdate": 0,
+                    "gradingduedate": 1593039600,
+                    "teamsubmission": 0,
+                    "requireallteammemberssubmit": 0,
+                    "teamsubmissiongroupingid": 0,
+                    "blindmarking": 0,
+                    "hidegrader": 0,
+                    "revealidentities": 0,
+                    "attemptreopenmethod": "none",
+                    "maxattempts": -1,
+                    "markingworkflow": 0,
+                    "markingallocation": 0,
+                    "requiresubmissionstatement": 0,
+                    "preventsubmissionnotingroup": 0,
+                    "configs": [
+                        {
+                            "plugin": "file",
+                            "subtype": "assignsubmission",
+                            "name": "enabled",
+                            "value": "1"
+                        },
+                        {
+                            "plugin": "file",
+                            "subtype": "assignsubmission",
+                            "name": "maxfilesubmissions",
+                            "value": "20"
+                        },
+                        {
+                            "plugin": "file",
+                            "subtype": "assignsubmission",
+                            "name": "maxsubmissionsizebytes",
+                            "value": "41943040"
+                        },
+                        {
+                            "plugin": "file",
+                            "subtype": "assignsubmission",
+                            "name": "filetypeslist",
+                            "value": ""
+                        },
+                        {
+                            "plugin": "comments",
+                            "subtype": "assignsubmission",
+                            "name": "enabled",
+                            "value": "1"
+                        },
+                        {
+                            "plugin": "comments",
+                            "subtype": "assignfeedback",
+                            "name": "enabled",
+                            "value": "1"
+                        },
+                        {
+                            "plugin": "comments",
+                            "subtype": "assignfeedback",
+                            "name": "commentinline",
+                            "value": "0"
+                        }
+                    ],
+                    "intro": "",
+                    "introformat": 1,
+                    "introfiles": [],
+                    "introattachments": []
+                }
+            ]
+        }
+    ],
+    "warnings": []
+}

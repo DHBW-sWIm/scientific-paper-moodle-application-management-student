@@ -1,0 +1,65 @@
+name: Lint, Build, Deploy and Package
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
+      - name: Lint
+        run: npm run lint
+
+  deploy_job:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    name: Build, Deploy and Package
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '10'
+      - name: Install Dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - uses: technote-space/workflow-conclusion-action@v1
+        name: Transfer Workflow status to environment
+      - name: Remove old plugin_template.zip
+        run: rm -rf ./plugin_template.zip
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Remove old static files
+        run: rm -rf ./plugin_template/static/js
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Remove old index.html
+        run: rm -rf ./plugin_template/index.html
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Copy index.html to root
+        run: cp -rf ./dist/index.html ./plugin_template
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Create js folder in static files
+        run: mkdir -p ./plugin_template/static/js
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Copy static files to static
+        run: cp -rf ./dist/js/* ./plugin_template/static/js
+        if: env.WORKFLOW_CONCLUSION == 'success'
+      - uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ./plugin_template.zip ./plugin_template
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Moodle Plugin .zip generated
+      - name: Rocket.Chat Notification
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        if: always()
+        with:
+          type: ${{ job.status }}
+          job_name: '*SCIENTIFIC-PAPER APPLICATION MANAGEMENT: Lint, Build, Deploy and Package*'
+          url: 'https://rocketchat.swimdhbw.de/hooks/EkF4gX6LZRp5GoZdC/tj8wCcjveuNrzN4fYY9TAEm3wxmBYNwo2QyJahjfhXdMenxK'
