@@ -106,6 +106,7 @@
                 <div class="form-row">
                   <div class="col-md-6 mb-3">
                     <label for="supervisors">Aktueller wiss. Betreuer</label>
+                    <p>{{currentSupervisor}}</p>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="supervisors">Neuer wiss. Betreuer</label>
@@ -154,7 +155,7 @@ export default {
   name: "Assign",
   components: {
     Infotoast,
-    Docusign
+    Docusign,
   },
   data() {
     return {
@@ -165,40 +166,78 @@ export default {
       selectedAssignment: "",
       toastmessage: "",
       url: "",
+      currentSupervisor: "",
       currentUserData: {},
+      selectedAssignmentCorpSupervisor: {},
+      corpSupervisorData: [],
       newCombination: {
         corporateFirst: "",
         corporateLast: "",
-        corporatepartnername:"",
+        corporatepartnername: "",
         corporatepartnermail: "",
         assignid: 0,
         studentid: 0,
         studentname: "",
         supervisorid: "",
-        supervisorname: ""
-      }
+        supervisorname: "",
+      },
     };
   },
   props: {
     token: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
-  beforeCreate: function() {},
+  beforeCreate: function () {},
   mounted() {
     this.getSupervisors();
     this.getCourses();
     this.getCurrentUserInfo();
+    this.getCorpSupervisorInfos();
   },
   created() {},
   methods: {
+    getCorpSupervisorInfos() {
+      this.$emit("loading", "10%", false);
+      var axiosConfig = {
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      };
+      axios
+        .get(
+          (process.env.VUE_APP_MOODEL_URL || "") +
+            "/webservice/rest/server.php",
+          {
+            params: {
+              wstoken: this.token,
+              wsfunction: "local_spsupman_get_studenthascorpsupervisor",
+              moodlewsrestformat: "json",
+            },
+          },
+          axiosConfig
+        )
+        .then((response) => {
+          this.$emit("loading", "90%", false);
+
+          if (!response.exception) {
+            this.corpSupervisorData = response.data;
+            this.$emit("loading", "100%", true);
+          }
+        })
+        .catch((error) => {
+          console.log(error); // eslint-disable-line
+          this.$emit("loading", "100%", true);
+          this.$emit("ajaxerror");
+        });
+    },
     getCurrentUserInfo() {
       this.$emit("loading", "10%", false);
       var axiosConfig = {
         headers: {
-          "Content-Type": "application/json;charset=UTF-8"
-        }
+          "Content-Type": "application/json;charset=UTF-8",
+        },
       };
       axios
         .get(
@@ -208,21 +247,20 @@ export default {
             params: {
               wstoken: this.token,
               wsfunction: "core_webservice_get_site_info",
-              moodlewsrestformat: "json"
-            }
+              moodlewsrestformat: "json",
+            },
           },
           axiosConfig
         )
-        .then(response => {
+        .then((response) => {
           this.$emit("loading", "90%", false);
 
           if (!response.exception) {
             this.currentUserData = response.data;
-            console.log(this.currentUserData); // eslint-disable-line
             this.$emit("loading", "100%", true);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error); // eslint-disable-line
           this.$emit("loading", "100%", true);
           this.$emit("ajaxerror");
@@ -248,8 +286,8 @@ export default {
       this.$emit("loading", "10%", false);
       var axiosConfig = {
         headers: {
-          "Content-Type": "application/json;charset=UTF-8"
-        }
+          "Content-Type": "application/json;charset=UTF-8",
+        },
       };
       axios
         .get(
@@ -260,12 +298,12 @@ export default {
               wstoken: this.token,
               wsfunction: "mod_assign_get_submissions",
               moodlewsrestformat: "json",
-              "assignmentids[0]": this.selectedAssignment
-            }
+              "assignmentids[0]": this.selectedAssignment,
+            },
           },
           axiosConfig
         )
-        .then(response => {
+        .then((response) => {
           this.$emit("loading", "90%", false);
           var urlToOpen = "";
           if (!response.exception && response.data.assignments.length == 1) {
@@ -300,40 +338,45 @@ export default {
             this.$emit("loading", "100%", true);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error); // eslint-disable-line
           this.$emit("loading", "100%", true);
           this.$emit("ajaxerror");
         });
     },
-    getSupervisorNameById(id){
+    getSupervisorNameById(id) {
       var supname = "Not found";
       for (let i = 0; i < this.supervisors.length; i++) {
         const element = this.supervisors[i];
         if (element.id == id) {
-          supname = element.firstname + ' ' + element.lastname;
-        } 
+          supname = element.firstname + " " + element.lastname;
+        }
       }
       return supname;
     },
     saveData() {
+      this.newCombination.assignid = this.selectedAssignment;
       this.newCombination.studentid = this.currentUserData.userid;
       this.newCombination.studentname = this.currentUserData.fullname;
-      this.newCombination.corporatepartnername = this.newCombination.corporateFirst + ' ' + this.newCombination.corporateLast;
-      this.newCombination.supervisorname = this.getSupervisorNameById(this.newCombination.supervisorid);
+      this.newCombination.corporatepartnername =
+        this.newCombination.corporateFirst +
+        " " +
+        this.newCombination.corporateLast;
+      this.newCombination.supervisorname = this.getSupervisorNameById(
+        this.newCombination.supervisorid
+      );
       var jsonData = {
-        changes: [this.newCombination]
+        changes: [this.newCombination],
       };
 
       var data = {
         variables: {
           dbchanges: {
             value: JSON.stringify(jsonData),
-            type: "String"
-          }
-        }
+            type: "String",
+          },
+        },
       };
-      console.log(data);// eslint-disable-line
       this.$emit("loading", "10%", false);
       axios
         .post(
@@ -343,11 +386,11 @@ export default {
           data,
           {
             headers: {
-              "Content-type": "application/json"
-            }
+              "Content-type": "application/json",
+            },
           }
         )
-        .then(response => {
+        .then((response) => {
           this.$emit("loading", "100%", true);
           if (response.status == 200) {
             this.toastmessage = "Die Zuordnung wurde erfolgreich angefordert.";
@@ -375,8 +418,8 @@ export default {
       this.students = [];
       var axiosConfig = {
         headers: {
-          "Content-Type": "application/json;charset=UTF-8"
-        }
+          "Content-Type": "application/json;charset=UTF-8",
+        },
       };
       axios
         .get(
@@ -387,12 +430,12 @@ export default {
               wstoken: this.token,
               wsfunction: "core_enrol_get_enrolled_users",
               moodlewsrestformat: "json",
-              courseid: aid
-            }
+              courseid: aid,
+            },
           },
           axiosConfig
         )
-        .then(response => {
+        .then((response) => {
           if (!response.exception) {
             this.students = this.filterStudents(response.data);
             axios
@@ -403,12 +446,12 @@ export default {
                   params: {
                     wstoken: this.token,
                     wsfunction: "local_spsupman_get_studenthassupervisor",
-                    moodlewsrestformat: "json"
-                  }
+                    moodlewsrestformat: "json",
+                  },
                 },
                 axiosConfig
               )
-              .then(respo => {
+              .then((respo) => {
                 if (!respo.exception) {
                   for (let i = 0; i < respo.data.length; i++) {
                     for (let j = 0; j < this.students.length; j++) {
@@ -416,38 +459,55 @@ export default {
                         this.students[j].id == respo.data[i].studentid &&
                         respo.data[i].assignmentid == this.selectedAssignment
                       ) {
-                        this.students[
-                          j
-                        ].currentSupervisor = this.mapSupervisorName(
+                        this.currentSupervisor = this.mapSupervisorName(
                           respo.data[i].supervisorid
                         );
                       }
+                    }
+                  }
+                  for (let i = 0; i < this.corpSupervisorData.length; i++) {
+                    if (
+                      this.corpSupervisorData[i].assignmentid ==
+                      this.selectedAssignment
+                    ) {
+                      this.newCombination.corporatepartnermail = this.corpSupervisorData[
+                        i
+                      ].cpsupervisormail;
+                      this.newCombination.corporatepartnermailValid = true;
+                      this.newCombination.corporateLast = this.corpSupervisorData[
+                        i
+                      ].cpsupervisorlast;
+                      this.newCombination.corporateLastValid = true;
+                      this.newCombination.corporateFirst = this.corpSupervisorData[
+                        i
+                      ].cpsupervisorfirst;
+                      this.newCombination.corporateFirstValid = true;
                     }
                   }
                   $("#modalStudents").modal("show");
                   this.$emit("loading", "100%", true);
                 }
               })
-              .catch(error => {
+              .catch((error) => {
                 console.log(error); // eslint-disable-line
                 this.$emit("loading", "100%", true);
                 this.$emit("ajaxerror");
               });
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error); // eslint-disable-line
           this.$emit("loading", "100%", true);
           this.$emit("ajaxerror");
         });
     },
-    getSupervisors: function() {
+    getSupervisors: function () {
       this.$emit("loading", "10%", false);
       this.supervisors = [];
       var axiosConfig = {
         headers: {
-          "Content-Type": "application/json;charset=UTF-8"
-        }
+          "Content-Type": "application/json;charset=UTF-8",
+        },
       };
       axios
         .get(
@@ -457,12 +517,12 @@ export default {
             params: {
               wstoken: this.token,
               wsfunction: "local_spsupman_get_supervisors",
-              moodlewsrestformat: "json"
-            }
+              moodlewsrestformat: "json",
+            },
           },
           axiosConfig
         )
-        .then(response => {
+        .then((response) => {
           if (!response.data.exception) {
             this.supervisors = response.data;
             this.$emit("loading", "100%", true);
@@ -471,7 +531,7 @@ export default {
             this.$emit("ajaxerror");
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error); // eslint-disable-line
           this.$emit("loading", "100%", true);
           this.$emit("ajaxerror");
@@ -495,12 +555,12 @@ export default {
       }
       return filteredStudents;
     },
-    getCourses: function() {
+    getCourses: function () {
       this.$emit("loading", "10%", false);
       var axiosConfig = {
         headers: {
-          "Content-Type": "application/json;charset=UTF-8"
-        }
+          "Content-Type": "application/json;charset=UTF-8",
+        },
       };
       axios
         .get(
@@ -510,24 +570,24 @@ export default {
             params: {
               wstoken: this.token,
               wsfunction: "mod_assign_get_assignments",
-              moodlewsrestformat: "json"
-            }
+              moodlewsrestformat: "json",
+            },
           },
           axiosConfig
         )
-        .then(response => {
+        .then((response) => {
           this.$emit("loading", "100%", true);
 
           if (!response.exception) {
             this.courses = response.data.courses;
           }
         })
-        .catch(error => {
+        .catch((error) => {
           this.$emit("loading", "100%", true);
           this.$emit("ajaxerror");
           console.log(error); // eslint-disable-line
         });
-    }
-  }
+    },
+  },
 };
 </script>

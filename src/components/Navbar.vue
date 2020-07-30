@@ -4,13 +4,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <router-link to="/create" class="nav-link">Anlage</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/manage" class="nav-link">Manager</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/supervisors" class="nav-link">Wiss. Betreuer</router-link>
+            <router-link to="/assign" class="nav-link">Zuweisung</router-link>
           </li>
         </ul>
         <form class="form-inline my-2 my-lg-0" @submit.prevent v-if="!loggedIn">
